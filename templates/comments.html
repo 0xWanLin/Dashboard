@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    {% block title %}<title>Customer Portal</title>{% endblock %}
+    <style>
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        {% if user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+                aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a href="/app" class="nav-link" href="{% url 'app:ticket' %}" style="font-size: 20px!important;">Dashboard</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" style="font-size: 20px!important;">Comments</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <div class="dropdown">
+                        <div class="bg-dark" style="color:white;font-size: 20px;">{{ user.username }}</div>
+                        <div class="dropdown-content">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div> 
+        {% else %}
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </nav>
+    <div class="align">
+        {% if user.is_authenticated %}
+        <div class="row justify-content-between" style="margin-left: 25px;margin-right: 25px;">
+            <h3 style="font-size:30px;">Ticket Details</h3>
+        </div>
+        <div class="align2 wrapper-table">
+            <table class="styled-tables_1" id="tableInfo">
+                <tr>
+                    <th class="row3">Ticket ID</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.demisto_id }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Ticket Title</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_title }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row2">Date Created</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_created }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Priority</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_priority }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Priority (Customer)</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_priority2 }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Status</th>
+                    {% for r in each_ticket %}
+                    <td class="{% if r.ticket_status == 'Open' %}open{% endif %}{% if r.ticket_status == 'Closed' %}closed{% endif %}">{{ r.ticket_status }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Owner</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_owner }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Source IP</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_sourceip }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row7">Ticket Details</th>
+                    {% for r in each_ticket %}
+                    <td style="word-wrap: break-word !important;">{{ r.ticket_details }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Owner (Customer)</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.ticket_vib_owner }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>   
+                    <th class="row3">Created By (Customer)</th>
+                    {% for r in each_ticket %}
+                    <td>{{ r.created_by }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        </div>
+        <!-- 
+         -->
+        <div class="tab">
+            <button class="tablinks" onclick="openSection(event, 'comment-section')">Comments</button>
+            <button class="tablinks" onclick="openSection(event, 'upload-section')">Upload Files</button>
+        </div>
+
+        <div id="comment-section" class="tabcontent">
+            <div class="warning" id="no_go"></div>
+            <div class="commentbox-app">
+            <div class="container1">
+                <h1 class="heading">Comments</h1>
+                <div class="clearfix">
+                <form id="comment-form">
+                    <input type="text" id="comment-name" class="comment-input" placeholder="Name">
+                    <input type="text" id="comment-input" class="comment-input" placeholder="Comment something...">
+                    <input type="submit" value="Post" class="comment-btn">
+                </form>
+                </div>
+                <ul id="comment-stream" class="comment-stream"></ul>
+                <button class="remove-all-btn" id="remove-all" type="button">Remove All</button>
+            </div>
+            </div>
+            <br>
+            <!-- django forms method not working -->
+            <!-- <div class="container">
+                <div class="col-md-12">
+                    <div class="row">
+                        <h1>Comments:</h1>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{ comment_form.as_p }}
+                            <input type="submit" value="Submit">
+                        </form>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+            
+        <div id="upload-section" class="tabcontent">
+            <div class="container1">
+                <h1 class="heading1">Upload Files</h1>
+                <form id='post-form' class='post-form' method='post' style="margin-top: 30px;font-size: 20px;">
+                    <input id='files' type='file' multiple onchange="ValidateSingleInput(this);"/>
+                </form>
+                <div id='result'></div>
+                <button class="remove-all-btn1" id="remove-all1" type="button">Remove All</button>
+            </div>
+        </div>
+        <br><br>
+        <script src="{% static 'js/comment-v2.js'%}"></script>
+        <script>
+          function openSection(evt, obj) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+              tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+              tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(obj).style.display = "block";
+            evt.currentTarget.className += " active";
+          }
+        </script>
+        <script>
+            var imagesObject = [];
+
+            function handleFileSelect(evt) {
+                var files = evt.target.files; // FileList object
+
+                // Loop through the FileList and render image files as thumbnails.
+                for (var i = 0, f; f = files[i]; i++) {
+
+                var reader = new FileReader();
+
+                // Closure to capture the file information.
+                reader.onload = function(e) {
+                    displayImgData(e.target.result)
+                    addImage(e.target.result);
+                };
+
+                reader.readAsDataURL(f);
+                }
+            }
+
+            function loadFromLocalStorage(){
+            var images = JSON.parse(localStorage.getItem("images"))
+
+            if(images && images.length > 0){
+                imagesObject = images;
+                
+                displayNumberOfImgs();
+                images.forEach(displayImgData);
+            }
+            }
+
+            function addImage(imgData){
+            imagesObject.push(imgData);
+            displayNumberOfImgs();
+            localStorage.setItem("images", JSON.stringify(imagesObject));
+            }
+
+            function displayImgData(imgData){
+            var span = document.createElement('span');
+            span.innerHTML = '<img class="thumbnail" src="' + imgData + '"/>';
+            document.getElementById('result').insertBefore(span, null);
+            }
+
+            function displayNumberOfImgs(){
+            if(imagesObject.length > 0){
+
+                // document.getElementById("state").innerHTML = imagesObject.length + " image" + ((imagesObject.length > 1) ? "s" : "") + " stored in your browser";
+                
+                document.getElementById("remove-all1").style.display = "inline";
+                
+            } else {
+                // document.getElementById("state").innerHTML = "No images stored in your browser.";
+                document.getElementById("remove-all1").style.display = "none";
+            }
+            
+            
+            }
+
+            function deleteImages(){
+            imagesObject = [];
+            localStorage.removeItem("images");
+            displayNumberOfImgs()
+            document.getElementById('result').innerHTML = "";
+            }
+
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+            document.getElementById('remove-all1').addEventListener("click", deleteImages);
+            loadFromLocalStorage();
+            </script>
+            <script>
+                var _validFileExtensions = [".jpg", ".jpeg", ".gif", ".png"];    
+                var uploadField = document.getElementById("files");
+
+                uploadField.onchange = function() {
+                    if(this.files[0].size > 2000000){
+                    alert("File is too big!");
+                    this.value = "";
+                    } 
+                    else {
+                        if (uploadField.type == "file") {
+                            var sFileName = uploadField.value;
+                            if (sFileName.length > 0) {
+                                var blnValid = false;
+                                for (var j = 0; j < _validFileExtensions.length; j++) {
+                                    var sCurExtension = _validFileExtensions[j];
+                                    if (sFileName.substr(sFileName.length - sCurExtension.length, sCurExtension.length).toLowerCase() == sCurExtension.toLowerCase()) {
+                                        blnValid = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if (!blnValid) {
+                                    alert("Sorry, " + sFileName + " is invalid, allowed extensions are: " + _validFileExtensions.join(", "));
+                                    uploadField.value = "";
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                };
+        </script>
+    </div>
+    {% else %}
+        <div class="verthori-align">
+            <p class="login-style1">You are not logged in<br>Please login on the right side of the Navigation Bar</p>
+        </div>  
+    {% endif %}
+</script>
+</body>
+</html>
